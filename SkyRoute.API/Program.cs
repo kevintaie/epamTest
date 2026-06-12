@@ -23,6 +23,7 @@ builder.Services.AddCors(options =>
 // Domain - Flight Providers (Strategy Pattern)
 builder.Services.AddScoped<IFlightProvider, GlobalAirProvider>();
 builder.Services.AddScoped<IFlightProvider, BudgetWingsProvider>();
+builder.Services.AddScoped<IFlightProvider, ArcticAirProvider>();
 
 // Application - Services
 builder.Services.AddScoped<IFlightService, FlightService>();
