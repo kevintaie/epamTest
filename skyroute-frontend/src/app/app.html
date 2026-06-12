@@ -9,3 +9,11 @@
   <app-flight-results></app-flight-results>
   <router-outlet></router-outlet>
 </main>
+
+@if (selectedFlight$ | async) {
+  <div class="drawer-backdrop" (click)="closeDrawer()"></div>
+  <aside class="drawer">
+    <button class="drawer-close" (click)="closeDrawer()" aria-label="Close">&#x2715;</button>
+    <app-flight-booking></app-flight-booking>
+  </aside>
+}

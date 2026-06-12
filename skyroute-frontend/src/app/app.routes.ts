@@ -8,11 +8,4 @@ export const routes: Routes = [
         (m) => m.FlightSearch,
       ),
   },
-  {
-    path: 'booking',
-    loadComponent: () =>
-      import('./components/flight-booking/flight-booking').then(
-        (m) => m.FlightBooking,
-      ),
-  },
 ];

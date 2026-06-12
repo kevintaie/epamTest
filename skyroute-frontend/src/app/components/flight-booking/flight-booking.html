@@ -4,12 +4,10 @@
     <h2>Booking Confirmed!</h2>
     <p class="reference-code">{{ bookingReference }}</p>
     <p class="success-message">Your booking has been confirmed. A confirmation email will be sent to your address.</p>
-    <button class="btn-primary" (click)="goBack()">Search New Flights</button>
+    <button class="btn-primary" (click)="close()">Back to Results</button>
   </div>
 } @else if (flight) {
   <div class="booking-card">
-    <button class="btn-back" (click)="goBack()">&larr; Back to results</button>
-
     <h2>Complete Your Booking</h2>
 
     <div class="flight-summary">

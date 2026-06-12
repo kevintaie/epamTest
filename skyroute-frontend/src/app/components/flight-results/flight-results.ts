@@ -1,6 +1,5 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import {
   FlightStateService,
   SortField,
@@ -16,7 +15,6 @@ import { FlightResult, CABIN_CLASS_LABELS } from '../../models/flight.model';
 })
 export class FlightResults {
   private stateService = inject(FlightStateService);
-  private router = inject(Router);
 
   readonly cabinLabels = CABIN_CLASS_LABELS;
 
@@ -44,6 +42,5 @@ export class FlightResults {
 
   selectFlight(flight: FlightResult) {
     this.stateService.selectFlight(flight);
-    this.router.navigate(['/booking']);
   }
 }

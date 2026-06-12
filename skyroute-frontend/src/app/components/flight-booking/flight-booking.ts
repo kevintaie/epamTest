@@ -6,7 +6,6 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { FlightService } from '../../services/flight.service';
 import { FlightStateService } from '../../services/flight-state.service';
@@ -38,7 +37,6 @@ export class FlightBooking implements OnInit, OnDestroy {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router,
     private flightService: FlightService,
     private stateService: FlightStateService,
   ) {}
@@ -53,11 +51,9 @@ export class FlightBooking implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.stateService.selectedFlight$.subscribe((flight) => {
         this.flight = flight;
-        if (!flight) {
-          this.router.navigate(['/']);
-          return;
+        if (flight) {
+          this.updateDocumentValidation(flight);
         }
-        this.updateDocumentValidation(flight);
       }),
     );
 
@@ -131,7 +127,7 @@ export class FlightBooking implements OnInit, OnDestroy {
     });
   }
 
-  goBack() {
-    this.router.navigate(['/']);
+  close() {
+    this.stateService.clearSelection();
   }
 }
