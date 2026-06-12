@@ -1,0 +1,100 @@
+@if (bookingReference) {
+  <div class="success-card">
+    <div class="success-icon">&#10003;</div>
+    <h2>Booking Confirmed!</h2>
+    <p class="reference-code">{{ bookingReference }}</p>
+    <p class="success-message">Your booking has been confirmed. A confirmation email will be sent to your address.</p>
+    <button class="btn-primary" (click)="goBack()">Search New Flights</button>
+  </div>
+} @else if (flight) {
+  <div class="booking-card">
+    <button class="btn-back" (click)="goBack()">&larr; Back to results</button>
+
+    <h2>Complete Your Booking</h2>
+
+    <div class="flight-summary">
+      <div class="summary-header">
+        <span class="provider">{{ flight.providerName }}</span>
+        <span class="flight-num">{{ flight.flightNumber }}</span>
+      </div>
+      <div class="summary-route">
+        <div class="route-point">
+          <span class="time">{{ flight.departureTime | date:'HH:mm' }}</span>
+          <span class="code">{{ flight.origin }}</span>
+        </div>
+        <div class="route-arrow">
+          <span class="duration">{{ flight.duration }}</span>
+          <div class="arrow-line"></div>
+        </div>
+        <div class="route-point">
+          <span class="time">{{ flight.arrivalTime | date:'HH:mm' }}</span>
+          <span class="code">{{ flight.destination }}</span>
+        </div>
+      </div>
+      <div class="summary-details">
+        <span>{{ cabinLabels[flight.cabinClass] }}</span>
+        <span>{{ flight.departureTime | date:'mediumDate' }}</span>
+      </div>
+    </div>
+
+    <div class="price-breakdown">
+      <h3>Price Breakdown</h3>
+      <div class="price-row">
+        <span>Price per passenger</span>
+        <span>${{ flight.pricePerPassenger | number:'1.2-2' }}</span>
+      </div>
+      @if (lastSearch) {
+        <div class="price-row">
+          <span>Passengers</span>
+          <span>&times; {{ lastSearch.passengers }}</span>
+        </div>
+      }
+      <div class="price-row total">
+        <span>Total</span>
+        <span>${{ flight.totalPrice | number:'1.2-2' }}</span>
+      </div>
+    </div>
+
+    <form [formGroup]="bookingForm" (ngSubmit)="onConfirm()">
+      <h3>Passenger Details</h3>
+
+      <div class="form-group">
+        <label for="passengerName">Full Name</label>
+        <input type="text" id="passengerName" formControlName="passengerName" placeholder="Enter full name" />
+        @if (bookingForm.get('passengerName')?.invalid && bookingForm.get('passengerName')?.touched) {
+          <span class="error">Full name is required (min 2 characters).</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" formControlName="email" placeholder="Enter email address" />
+        @if (bookingForm.get('email')?.invalid && bookingForm.get('email')?.touched) {
+          <span class="error">A valid email address is required.</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="documentNumber">{{ documentLabel }}</label>
+        <input type="text" id="documentNumber" formControlName="documentNumber" [placeholder]="documentPlaceholder" />
+        @if (bookingForm.get('documentNumber')?.invalid && bookingForm.get('documentNumber')?.touched) {
+          <span class="error">
+            @if (isInternational) {
+              Passport number is required (alphanumeric only).
+            } @else {
+              National ID is required (numbers only).
+            }
+          </span>
+        }
+      </div>
+
+      <button type="submit" class="btn-primary" [disabled]="bookingForm.invalid || submitting">
+        @if (submitting) {
+          Processing...
+        } @else {
+          Confirm Booking
+        }
+      </button>
+    </form>
+  </div>
+}

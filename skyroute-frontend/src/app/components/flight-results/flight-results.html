@@ -1,0 +1,71 @@
+@if (loading$ | async) {
+  <div class="loading">
+    <div class="spinner"></div>
+    <p>Searching for the best flights...</p>
+  </div>
+}
+
+@if (!(loading$ | async)) {
+  @if ((searchPerformed$ | async) && (results$ | async)?.length === 0) {
+    <div class="empty-state">
+      <span class="empty-icon">✈️</span>
+      <h3>No flights found</h3>
+      <p>Try adjusting your search criteria or selecting different dates.</p>
+    </div>
+  }
+
+  @if ((results$ | async)?.length) {
+    <div class="results-card">
+      <div class="results-header">
+        <h2>Available Flights</h2>
+        <div class="sort-controls">
+          <span class="sort-label">Sort by:</span>
+          <button class="sort-btn" [class.active]="currentSort === 'price'" (click)="sort('price')">
+            Price {{ getSortIcon('price') }}
+          </button>
+          <button class="sort-btn" [class.active]="currentSort === 'duration'" (click)="sort('duration')">
+            Duration {{ getSortIcon('duration') }}
+          </button>
+          <button class="sort-btn" [class.active]="currentSort === 'departure'" (click)="sort('departure')">
+            Departure {{ getSortIcon('departure') }}
+          </button>
+        </div>
+      </div>
+
+      <div class="flights-list">
+        @for (flight of results$ | async; track flight.flightNumber + flight.providerName) {
+          <div class="flight-card" (click)="selectFlight(flight)">
+            <div class="flight-airline">
+              <span class="provider-badge">{{ flight.providerName }}</span>
+              <span class="flight-number">{{ flight.flightNumber }}</span>
+            </div>
+
+            <div class="flight-times">
+              <div class="time-block">
+                <span class="time">{{ flight.departureTime | date:'HH:mm' }}</span>
+                <span class="airport">{{ flight.origin }}</span>
+              </div>
+              <div class="flight-duration">
+                <span class="duration-line"></span>
+                <span class="duration-text">{{ flight.duration }}</span>
+              </div>
+              <div class="time-block">
+                <span class="time">{{ flight.arrivalTime | date:'HH:mm' }}</span>
+                <span class="airport">{{ flight.destination }}</span>
+              </div>
+            </div>
+
+            <div class="flight-class">{{ cabinLabels[flight.cabinClass] }}</div>
+
+            <div class="flight-price">
+              <span class="total-price">${{ flight.totalPrice | number:'1.2-2' }}</span>
+              <span class="per-passenger">${{ flight.pricePerPassenger | number:'1.2-2' }} /person</span>
+            </div>
+
+            <button class="btn-select">Select</button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+}

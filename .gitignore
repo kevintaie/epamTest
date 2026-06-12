@@ -1,0 +1,24 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# .NET build output
+bin/
+obj/
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+
+# Environment / secrets
+*.env
+appsettings.Development.json
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Claude dev server config (local only)
+.claude/
