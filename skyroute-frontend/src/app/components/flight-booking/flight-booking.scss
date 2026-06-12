@@ -122,6 +122,105 @@
   }
 }
 
+.passenger-tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  border: 2px solid #ddd;
+  border-radius: 20px;
+  background: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: #1a237e;
+    color: #1a237e;
+  }
+
+  &.active {
+    border-color: #1a237e;
+    background: #1a237e;
+    color: #fff;
+  }
+
+  &.tab-valid {
+    border-color: #2e7d32;
+    color: #2e7d32;
+
+    &.active {
+      background: #2e7d32;
+      color: #fff;
+    }
+  }
+
+  &.tab-invalid {
+    border-color: #d32f2f;
+    color: #d32f2f;
+
+    &.active {
+      background: #d32f2f;
+      color: #fff;
+    }
+  }
+}
+
+.tab-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: #d32f2f;
+  color: #fff;
+
+  &.ok {
+    background: #2e7d32;
+  }
+}
+
+.reference-list {
+  margin: 1rem 0 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.reference-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f5f7ff;
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+}
+
+.ref-name {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.ref-code {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1a237e;
+  letter-spacing: 1px;
+}
+
 .form-group {
   margin-bottom: 1rem;
 

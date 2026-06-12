@@ -4,9 +4,11 @@ import {
   ReactiveFormsModule,
   FormBuilder,
   FormGroup,
+  FormArray,
   Validators,
 } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { combineLatest, forkJoin } from 'rxjs';
 import { FlightService } from '../../services/flight.service';
 import { FlightStateService } from '../../services/flight-state.service';
 import {
@@ -30,7 +32,8 @@ export class FlightBooking implements OnInit, OnDestroy {
   lastSearch: FlightSearchRequest | null = null;
   bookingForm!: FormGroup;
   isInternational = false;
-  bookingReference: string | null = null;
+  activeTab = 0;
+  bookingReferences: { passengerName: string; code: string }[] = [];
   submitting = false;
 
   private subscriptions = new Subscription();
@@ -42,30 +45,28 @@ export class FlightBooking implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.bookingForm = this.fb.group({
-      passengerName: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]],
-      documentNumber: ['', Validators.required],
-    });
+    this.bookingForm = this.fb.group({ passengers: this.fb.array([]) });
 
     this.subscriptions.add(
-      this.stateService.selectedFlight$.subscribe((flight) => {
+      combineLatest([
+        this.stateService.selectedFlight$,
+        this.stateService.lastSearch$,
+      ]).subscribe(([flight, search]) => {
         this.flight = flight;
+        this.lastSearch = search;
         if (flight) {
-          this.updateDocumentValidation(flight);
+          this.buildPassengerForms(search?.passengers ?? 1, flight);
         }
       }),
-    );
-
-    this.subscriptions.add(
-      this.stateService.lastSearch$.subscribe(
-        (search) => (this.lastSearch = search),
-      ),
     );
   }
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
+  }
+
+  get passengerForms(): FormArray {
+    return this.bookingForm.get('passengers') as FormArray;
   }
 
   get documentLabel(): string {
@@ -78,47 +79,81 @@ export class FlightBooking implements OnInit, OnDestroy {
       : 'Enter national ID number';
   }
 
-  private updateDocumentValidation(flight: FlightResult) {
+  setTab(index: number) {
+    this.activeTab = index;
+  }
+
+  isTabValid(index: number): boolean {
+    return this.passengerForms.at(index).valid;
+  }
+
+  isTabTouched(index: number): boolean {
+    return this.passengerForms.at(index).touched;
+  }
+
+  passengerLabel(index: number): string {
+    const name = this.passengerForms.at(index).value?.passengerName?.trim();
+    return name ? name : `Passenger ${index + 1}`;
+  }
+
+  private buildPassengerForms(count: number, flight: FlightResult) {
     const originAirport = AIRPORTS.find((a) => a.code === flight.origin);
     const destAirport = AIRPORTS.find((a) => a.code === flight.destination);
     this.isInternational = originAirport?.country !== destAirport?.country;
 
-    const docControl = this.bookingForm.get('documentNumber');
-    if (this.isInternational) {
-      docControl?.setValidators([
-        Validators.required,
-        Validators.pattern(/^[A-Za-z0-9]+$/),
-      ]);
-    } else {
-      docControl?.setValidators([
-        Validators.required,
-        Validators.pattern(/^[0-9]+$/),
-      ]);
+    const docValidators = this.isInternational
+      ? [Validators.required, Validators.pattern(/^[A-Za-z0-9]+$/)]
+      : [Validators.required, Validators.pattern(/^[0-9]+$/)];
+
+    const fa = this.passengerForms;
+    fa.clear();
+    for (let i = 0; i < count; i++) {
+      fa.push(
+        this.fb.group({
+          passengerName: ['', [Validators.required, Validators.minLength(2)]],
+          email: ['', [Validators.required, Validators.email]],
+          documentNumber: ['', docValidators],
+        }),
+      );
     }
-    docControl?.updateValueAndValidity();
+    this.activeTab = 0;
   }
 
   onConfirm() {
-    if (this.bookingForm.invalid || !this.flight) return;
+    if (!this.flight) return;
+
+    this.bookingForm.markAllAsTouched();
+    if (this.bookingForm.invalid) {
+      const firstInvalid = this.passengerForms.controls.findIndex(
+        (c) => c.invalid,
+      );
+      if (firstInvalid >= 0) this.activeTab = firstInvalid;
+      return;
+    }
 
     this.submitting = true;
-    const formValue = this.bookingForm.value;
+    const docType = this.isInternational ? 'Passport Number' : 'National ID';
 
-    const request: BookingRequest = {
-      flightNumber: this.flight.flightNumber,
-      providerName: this.flight.providerName,
-      origin: this.flight.origin,
-      destination: this.flight.destination,
-      totalPrice: this.flight.totalPrice,
-      passengerName: formValue.passengerName,
-      email: formValue.email,
-      documentType: this.isInternational ? 'Passport Number' : 'National ID',
-      documentNumber: formValue.documentNumber,
-    };
+    const requests = this.passengerForms.controls.map((ctrl) =>
+      this.flightService.createBooking({
+        flightNumber: this.flight!.flightNumber,
+        providerName: this.flight!.providerName,
+        origin: this.flight!.origin,
+        destination: this.flight!.destination,
+        totalPrice: this.flight!.totalPrice,
+        passengerName: ctrl.value.passengerName,
+        email: ctrl.value.email,
+        documentType: docType,
+        documentNumber: ctrl.value.documentNumber,
+      } as BookingRequest),
+    );
 
-    this.flightService.createBooking(request).subscribe({
-      next: (response) => {
-        this.bookingReference = response.bookingReferenceCode;
+    forkJoin(requests).subscribe({
+      next: (responses) => {
+        this.bookingReferences = responses.map((r, i) => ({
+          passengerName: this.passengerForms.at(i).value.passengerName,
+          code: r.bookingReferenceCode,
+        }));
         this.submitting = false;
       },
       error: () => {

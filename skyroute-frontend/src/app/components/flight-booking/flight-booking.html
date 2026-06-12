@@ -1,9 +1,16 @@
-@if (bookingReference) {
+@if (bookingReferences.length > 0) {
   <div class="success-card">
     <div class="success-icon">&#10003;</div>
     <h2>Booking Confirmed!</h2>
-    <p class="reference-code">{{ bookingReference }}</p>
-    <p class="success-message">Your booking has been confirmed. A confirmation email will be sent to your address.</p>
+    <p class="success-message">All passengers have been booked successfully.</p>
+    <div class="reference-list">
+      @for (ref of bookingReferences; track ref.code) {
+        <div class="reference-item">
+          <span class="ref-name">{{ ref.passengerName }}</span>
+          <span class="ref-code">{{ ref.code }}</span>
+        </div>
+      }
+    </div>
     <button class="btn-primary" (click)="close()">Back to Results</button>
   </div>
 } @else if (flight) {
@@ -56,42 +63,60 @@
     <form [formGroup]="bookingForm" (ngSubmit)="onConfirm()">
       <h3>Passenger Details</h3>
 
-      <div class="form-group">
-        <label for="passengerName">Full Name</label>
-        <input type="text" id="passengerName" formControlName="passengerName" placeholder="Enter full name" />
-        @if (bookingForm.get('passengerName')?.invalid && bookingForm.get('passengerName')?.touched) {
-          <span class="error">Full name is required (min 2 characters).</span>
+      @if (passengerForms.length > 1) {
+        <div class="passenger-tabs">
+          @for (ctrl of passengerForms.controls; track $index) {
+            <button type="button" class="tab-btn"
+              [class.active]="activeTab === $index"
+              [class.tab-valid]="isTabValid($index) && isTabTouched($index)"
+              [class.tab-invalid]="!isTabValid($index) && isTabTouched($index)"
+              (click)="setTab($index)">
+              {{ passengerLabel($index) }}
+              @if (isTabTouched($index)) {
+                <span class="tab-dot" [class.ok]="isTabValid($index)">
+                  {{ isTabValid($index) ? '✓' : '!' }}
+                </span>
+              }
+            </button>
+          }
+        </div>
+      }
+
+      <div formArrayName="passengers">
+        @for (ctrl of passengerForms.controls; track $index) {
+          <div [formGroupName]="$index" [hidden]="activeTab !== $index">
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" formControlName="passengerName" placeholder="Enter full name" />
+              @if (ctrl.get('passengerName')?.invalid && ctrl.get('passengerName')?.touched) {
+                <span class="error">Full name is required (min 2 characters).</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" formControlName="email" placeholder="Enter email address" />
+              @if (ctrl.get('email')?.invalid && ctrl.get('email')?.touched) {
+                <span class="error">A valid email address is required.</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label>{{ documentLabel }}</label>
+              <input type="text" formControlName="documentNumber" [placeholder]="documentPlaceholder" />
+              @if (ctrl.get('documentNumber')?.invalid && ctrl.get('documentNumber')?.touched) {
+                <span class="error">
+                  @if (isInternational) { Passport number is required (alphanumeric only). }
+                  @else { National ID is required (numbers only). }
+                </span>
+              }
+            </div>
+          </div>
         }
       </div>
 
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" formControlName="email" placeholder="Enter email address" />
-        @if (bookingForm.get('email')?.invalid && bookingForm.get('email')?.touched) {
-          <span class="error">A valid email address is required.</span>
-        }
-      </div>
-
-      <div class="form-group">
-        <label for="documentNumber">{{ documentLabel }}</label>
-        <input type="text" id="documentNumber" formControlName="documentNumber" [placeholder]="documentPlaceholder" />
-        @if (bookingForm.get('documentNumber')?.invalid && bookingForm.get('documentNumber')?.touched) {
-          <span class="error">
-            @if (isInternational) {
-              Passport number is required (alphanumeric only).
-            } @else {
-              National ID is required (numbers only).
-            }
-          </span>
-        }
-      </div>
-
-      <button type="submit" class="btn-primary" [disabled]="bookingForm.invalid || submitting">
-        @if (submitting) {
-          Processing...
-        } @else {
-          Confirm Booking
-        }
+      <button type="submit" class="btn-primary" [disabled]="submitting">
+        @if (submitting) { Processing... } @else { Confirm Booking }
       </button>
     </form>
   </div>
