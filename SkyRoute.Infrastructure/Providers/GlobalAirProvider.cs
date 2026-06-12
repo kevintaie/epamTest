@@ -56,15 +56,15 @@ public class GlobalAirProvider : IFlightProvider
             _ => 1m
         };
 
-        var flightCount = rng.Next(2, 5);
+        var flightCount = rng.Next(10, 13);
         var flights = new List<Flight>();
         var usedHours = new HashSet<int>();
 
         for (int i = 0; i < flightCount; i++)
         {
             int departureHour;
-            do { departureHour = rng.Next(5, 23); }
-            while (usedHours.Any(h => Math.Abs(h - departureHour) < 2));
+            do { departureHour = rng.Next(4, 24); }
+            while (usedHours.Contains(departureHour));
             usedHours.Add(departureHour);
 
             var durationMinutes = rng.Next(minH * 60, maxH * 60 + 1);
