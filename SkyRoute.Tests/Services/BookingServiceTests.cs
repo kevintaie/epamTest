@@ -11,17 +11,20 @@ public class BookingServiceTests
 {
     private readonly BookingService _service = new(NullLogger<BookingService>.Instance);
 
-    private static BookingRequestDto SampleRequest() => new()
+    private static BookingRequestDto SampleRequest(int passengers = 1) => new()
     {
         FlightNumber = "GA-200",
         ProviderName = "GlobalAir",
         Origin = "EZE",
         Destination = "MIA",
-        TotalPrice = 900m,
-        PassengerName = "Maria García",
-        Email = "maria@example.com",
-        DocumentType = "Passport Number",
-        DocumentNumber = "AB987654"
+        TotalPrice = 900m * passengers,
+        Passengers = Enumerable.Range(1, passengers).Select(i => new PassengerDto
+        {
+            PassengerName = $"Passenger {i}",
+            Email = $"passenger{i}@example.com",
+            DocumentType = "Passport Number",
+            DocumentNumber = $"AB{i:D6}"
+        }).ToList()
     };
 
     [Fact]

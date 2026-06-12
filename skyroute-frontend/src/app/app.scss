@@ -18,6 +18,7 @@
     font-weight: 800;
     letter-spacing: -0.5px;
     cursor: pointer;
+    user-select: none;
   }
 
   .tagline {
@@ -30,6 +31,28 @@
   max-width: 1100px;
   margin: 2rem auto;
   padding: 0 1.5rem;
+}
+
+.results-layout {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 1.5rem;
+}
+
+.results-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .drawer-backdrop {

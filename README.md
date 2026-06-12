@@ -164,5 +164,3 @@ EPAM/
 - **No persistence** — Bookings are generated in memory. A reference code is returned but there is no endpoint to retrieve or cancel a booking. In a production system, bookings would be persisted to a database (e.g., SQL Server via EF Core).
 - **No authentication** — The API is open. Production would require JWT-based auth.
 - **Mock providers only** — `GlobalAirProvider` and `BudgetWingsProvider` return synthesised data. Integration with real airline APIs would require HTTP clients, retry policies (Polly), and circuit breakers.
-- **No unit/integration tests** — Out of scope for the time constraint. The architecture is fully testable: providers are injected interfaces, services are thin, and validators are isolated.
-- **`PricePerPassenger` in the `Flight` entity holds the post-pricing-rule price** — The raw base fare used internally by each provider is not exposed on the domain entity. For a production system, both values would be tracked to support price auditing and margin calculations.

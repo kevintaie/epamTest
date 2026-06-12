@@ -1,13 +1,23 @@
 <header class="app-header">
   <div class="header-content">
-    <h1 class="logo" routerLink="/">SkyRoute</h1>
+    <h1 class="logo" (click)="goHome()">SkyRoute</h1>
     <span class="tagline">Find your perfect flight</span>
   </div>
 </header>
 
 <main class="app-main">
-  <app-flight-results></app-flight-results>
-  <router-outlet></router-outlet>
+  @if (showResultsLayout) {
+    <div class="results-layout">
+      <aside class="sidebar">
+        <app-flight-search [compact]="true"></app-flight-search>
+      </aside>
+      <div class="results-content">
+        <app-flight-results></app-flight-results>
+      </div>
+    </div>
+  } @else {
+    <app-flight-search></app-flight-search>
+  }
 </main>
 
 @if (selectedFlight$ | async) {

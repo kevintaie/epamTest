@@ -31,16 +31,20 @@ export interface FlightResult {
   pricePerPassenger: number;
 }
 
+export interface PassengerInfo {
+  passengerName: string;
+  email: string;
+  documentType: string;
+  documentNumber: string;
+}
+
 export interface BookingRequest {
   flightNumber: string;
   providerName: string;
   origin: string;
   destination: string;
   totalPrice: number;
-  passengerName: string;
-  email: string;
-  documentType: string;
-  documentNumber: string;
+  passengers: PassengerInfo[];
 }
 
 export interface BookingResponse {

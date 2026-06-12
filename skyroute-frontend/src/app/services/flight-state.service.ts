@@ -42,6 +42,14 @@ export class FlightStateService {
     this.selectedFlightSubject.next(null);
   }
 
+  resetSearch() {
+    this.resultsSubject.next([]);
+    this.loadingSubject.next(false);
+    this.searchPerformedSubject.next(false);
+    this.lastSearchSubject.next(null);
+    this.selectedFlightSubject.next(null);
+  }
+
   sortResults(field: SortField, direction: SortDirection) {
     const current = [...this.resultsSubject.value];
     const multiplier = direction === 'asc' ? 1 : -1;

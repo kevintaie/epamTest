@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -7,8 +7,7 @@ import {
   FormArray,
   Validators,
 } from '@angular/forms';
-import { Subscription } from 'rxjs';
-import { combineLatest, forkJoin } from 'rxjs';
+import { Subscription, combineLatest, finalize } from 'rxjs';
 import { FlightService } from '../../services/flight.service';
 import { FlightStateService } from '../../services/flight-state.service';
 import {
@@ -17,6 +16,7 @@ import {
   AIRPORTS,
   CABIN_CLASS_LABELS,
   BookingRequest,
+  PassengerInfo,
 } from '../../models/flight.model';
 
 @Component({
@@ -33,7 +33,7 @@ export class FlightBooking implements OnInit, OnDestroy {
   bookingForm!: FormGroup;
   isInternational = false;
   activeTab = 0;
-  bookingReferences: { passengerName: string; code: string }[] = [];
+  bookingReference: string | null = null;
   submitting = false;
 
   private subscriptions = new Subscription();
@@ -42,6 +42,7 @@ export class FlightBooking implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private flightService: FlightService,
     private stateService: FlightStateService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -117,6 +118,7 @@ export class FlightBooking implements OnInit, OnDestroy {
       );
     }
     this.activeTab = 0;
+    this.submitting = false;
   }
 
   onConfirm() {
@@ -131,38 +133,47 @@ export class FlightBooking implements OnInit, OnDestroy {
       return;
     }
 
+    this.bookingReference = null;
     this.submitting = true;
     const docType = this.isInternational ? 'Passport Number' : 'National ID';
 
-    const requests = this.passengerForms.controls.map((ctrl) =>
-      this.flightService.createBooking({
-        flightNumber: this.flight!.flightNumber,
-        providerName: this.flight!.providerName,
-        origin: this.flight!.origin,
-        destination: this.flight!.destination,
-        totalPrice: this.flight!.totalPrice,
-        passengerName: ctrl.value.passengerName,
-        email: ctrl.value.email,
-        documentType: docType,
-        documentNumber: ctrl.value.documentNumber,
-      } as BookingRequest),
-    );
+    const passengers: PassengerInfo[] = this.passengerForms.controls.map((ctrl) => ({
+      passengerName: ctrl.value.passengerName,
+      email: ctrl.value.email,
+      documentType: docType,
+      documentNumber: ctrl.value.documentNumber,
+    }));
 
-    forkJoin(requests).subscribe({
-      next: (responses) => {
-        this.bookingReferences = responses.map((r, i) => ({
-          passengerName: this.passengerForms.at(i).value.passengerName,
-          code: r.bookingReferenceCode,
-        }));
+    const request: BookingRequest = {
+      flightNumber: this.flight!.flightNumber,
+      providerName: this.flight!.providerName,
+      origin: this.flight!.origin,
+      destination: this.flight!.destination,
+      totalPrice: this.flight!.totalPrice,
+      passengers,
+    };
+
+    this.flightService
+      .createBooking(request)
+      .pipe(finalize(() => {
         this.submitting = false;
-      },
-      error: () => {
-        this.submitting = false;
-      },
-    });
+        this.cdr.markForCheck();
+      }))
+      .subscribe({
+        next: (response) => {
+          this.bookingReference = response.bookingReferenceCode;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.submitting = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   close() {
+    this.bookingReference = null;
+    this.submitting = false;
     this.stateService.clearSelection();
   }
 }

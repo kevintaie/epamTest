@@ -1,16 +1,17 @@
-@if (bookingReferences.length > 0) {
+@if (bookingReference) {
   <div class="success-card">
     <div class="success-icon">&#10003;</div>
     <h2>Booking Confirmed!</h2>
-    <p class="success-message">All passengers have been booked successfully.</p>
+    <p class="ref-code">{{ bookingReference }}</p>
     <div class="reference-list">
-      @for (ref of bookingReferences; track ref.code) {
+      @for (ctrl of passengerForms.controls; track $index) {
         <div class="reference-item">
-          <span class="ref-name">{{ ref.passengerName }}</span>
-          <span class="ref-code">{{ ref.code }}</span>
+          <span class="ref-index">{{ $index + 1 }}</span>
+          <span class="ref-name">{{ ctrl.value.passengerName }}</span>
         </div>
       }
     </div>
+    <p class="success-message">A confirmation email will be sent to each passenger.</p>
     <button class="btn-primary" (click)="close()">Back to Results</button>
   </div>
 } @else if (flight) {

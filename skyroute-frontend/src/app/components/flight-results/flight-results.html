@@ -6,15 +6,15 @@
 }
 
 @if (!(loading$ | async)) {
-  @if ((searchPerformed$ | async) && (results$ | async)?.length === 0) {
+  @if ((searchPerformed$ | async) && allResults.length === 0) {
     <div class="empty-state">
-      <span class="empty-icon">✈️</span>
+      <span class="empty-icon">&#9992;&#65039;</span>
       <h3>No flights found</h3>
       <p>Try adjusting your search criteria or selecting different dates.</p>
     </div>
   }
 
-  @if ((results$ | async)?.length) {
+  @if (allResults.length) {
     <div class="results-card">
       <div class="results-header">
         <h2>Available Flights</h2>
@@ -33,7 +33,7 @@
       </div>
 
       <div class="flights-list">
-        @for (flight of results$ | async; track flight.flightNumber + flight.providerName) {
+        @for (flight of paginatedResults; track flight.flightNumber + flight.providerName) {
           <div class="flight-card" (click)="selectFlight(flight)">
             <div class="flight-airline">
               <span class="provider-badge">{{ flight.providerName }}</span>
@@ -65,6 +65,29 @@
             <button class="btn-select">Select</button>
           </div>
         }
+      </div>
+
+      <div class="pagination-bar">
+        <div class="page-size-control">
+          <label for="pageSize">Results per page:</label>
+          <select id="pageSize" [value]="pageSize" (change)="setPageSize(+$any($event.target).value)">
+            @for (opt of pageSizeOptions; track opt) {
+              <option [value]="opt">{{ opt }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="page-nav">
+          <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(1)">&laquo;</button>
+          <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">&lsaquo;</button>
+          @for (p of pages; track p) {
+            <button class="page-btn" [class.active]="p === currentPage" (click)="goToPage(p)">{{ p }}</button>
+          }
+          <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">&rsaquo;</button>
+          <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(totalPages)">&raquo;</button>
+        </div>
+
+        <span class="page-info">Page {{ currentPage }} of {{ totalPages }} ({{ allResults.length }} results)</span>
       </div>
     </div>
   }

@@ -1,55 +1,111 @@
-<div class="search-card">
-  <h2>Search Flights</h2>
-  <form [formGroup]="searchForm" (ngSubmit)="onSearch()">
-    <div class="form-row">
-      <div class="form-group">
-        <label for="origin">Origin</label>
-        <select id="origin" formControlName="origin">
+@if (!compact) {
+  <div class="search-card">
+    <h2>Search Flights</h2>
+    <form [formGroup]="searchForm" (ngSubmit)="onSearch()">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="origin">Origin</label>
+          <select id="origin" formControlName="origin">
+            <option value="" disabled>Select origin</option>
+            @for (airport of airports; track airport.code) {
+              <option [value]="airport.code">{{ airport.code }} - {{ airport.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="destination">Destination</label>
+          <select id="destination" formControlName="destination">
+            <option value="" disabled>Select destination</option>
+            @for (airport of availableDestinations; track airport.code) {
+              <option [value]="airport.code">{{ airport.code }} - {{ airport.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="departureDate">Departure Date</label>
+          <input type="date" id="departureDate" formControlName="departureDate" [min]="minDate" />
+        </div>
+
+        <div class="form-group">
+          <label for="passengers">Passengers</label>
+          <select id="passengers" formControlName="passengers">
+            @for (n of passengerOptions; track n) {
+              <option [ngValue]="n">{{ n }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="cabinClass">Cabin Class</label>
+          <select id="cabinClass" formControlName="cabinClass">
+            @for (cls of cabinClasses; track cls.value) {
+              <option [ngValue]="cls.value">{{ cls.label }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-search" [disabled]="searchForm.invalid">
+        Search Flights
+      </button>
+    </form>
+  </div>
+}
+
+@if (compact) {
+  <div class="sidebar-search">
+    <h3>New Search</h3>
+    <form [formGroup]="searchForm" (ngSubmit)="onSearch()">
+      <div class="compact-group">
+        <label for="compact-origin">Origin</label>
+        <select id="compact-origin" formControlName="origin">
           <option value="" disabled>Select origin</option>
           @for (airport of airports; track airport.code) {
-            <option [value]="airport.code">{{ airport.code }} - {{ airport.name }}</option>
+            <option [value]="airport.code">{{ airport.code }}</option>
           }
         </select>
       </div>
 
-      <div class="form-group">
-        <label for="destination">Destination</label>
-        <select id="destination" formControlName="destination">
+      <div class="compact-group">
+        <label for="compact-destination">Destination</label>
+        <select id="compact-destination" formControlName="destination">
           <option value="" disabled>Select destination</option>
           @for (airport of availableDestinations; track airport.code) {
-            <option [value]="airport.code">{{ airport.code }} - {{ airport.name }}</option>
+            <option [value]="airport.code">{{ airport.code }}</option>
           }
         </select>
       </div>
-    </div>
 
-    <div class="form-row">
-      <div class="form-group">
-        <label for="departureDate">Departure Date</label>
-        <input type="date" id="departureDate" formControlName="departureDate" [min]="minDate" />
+      <div class="compact-group">
+        <label for="compact-date">Departure Date</label>
+        <input type="date" id="compact-date" formControlName="departureDate" [min]="minDate" />
       </div>
 
-      <div class="form-group">
-        <label for="passengers">Passengers</label>
-        <select id="passengers" formControlName="passengers">
+      <div class="compact-group">
+        <label for="compact-passengers">Passengers</label>
+        <select id="compact-passengers" formControlName="passengers">
           @for (n of passengerOptions; track n) {
             <option [ngValue]="n">{{ n }}</option>
           }
         </select>
       </div>
 
-      <div class="form-group">
-        <label for="cabinClass">Cabin Class</label>
-        <select id="cabinClass" formControlName="cabinClass">
+      <div class="compact-group">
+        <label for="compact-cabin">Cabin Class</label>
+        <select id="compact-cabin" formControlName="cabinClass">
           @for (cls of cabinClasses; track cls.value) {
             <option [ngValue]="cls.value">{{ cls.label }}</option>
           }
         </select>
       </div>
-    </div>
 
-    <button type="submit" class="btn-search" [disabled]="searchForm.invalid">
-      Search Flights
-    </button>
-  </form>
-</div>
+      <button type="submit" class="btn-search-compact" [disabled]="searchForm.invalid">
+        Search
+      </button>
+    </form>
+  </div>
+}
